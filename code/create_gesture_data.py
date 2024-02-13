@@ -28,7 +28,7 @@ def segment_hand(frame, threshold=25):
 
     _ , thresholded = cv2.threshold(diff, threshold, 255, cv2.THRESH_BINARY)
 
-    # Grab the external contours for the image
+    ## Saisir les contours externes de l'image
     contours, _= cv2.findContours(thresholded.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     if len(contours) == 0:
@@ -49,7 +49,7 @@ num_imgs_taken = 0
 while True:
     ret, frame = cam.read()
 
-    # filpping the frame to prevent inverted image of captured frame...
+    # Retourne l'image pour que cela paraisse plus naturel
     frame = cv2.flip(frame, 1)
 
     frame_copy = frame.copy()
@@ -59,78 +59,71 @@ while True:
     gray_frame = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
     gray_frame = cv2.GaussianBlur(gray_frame, (9, 9), 0)
 
-    if num_frames < 60:
+    #Pendant 120 images, on calcule l'arrière-plan moyen pour la soustraction d'arrière-plan
+    if num_frames < 120:
         cal_accum_avg(gray_frame, accumulated_weight)
-        if num_frames <= 59:
+        if num_frames <= 119:
             
-            cv2.putText(frame_copy, "FETCHING BACKGROUND...PLEASE WAIT", (80, 400), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,0,255), 2)
-            #cv2.imshow("Sign Detection",frame_copy)
+            cv2.putText(frame_copy, "Recuperation de l'arriere plan...", (80, 400), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,0,255), 2)
          
-    #Time to configure the hand specifically into the ROI...
+    #On laisse 300 images pour faire le signe voulu
     elif num_frames <= 300: 
 
         hand = segment_hand(gray_frame)
         
-        cv2.putText(frame_copy, "Adjust hand...Gesture for" + str(element), (200, 400), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
+        cv2.putText(frame_copy, "Faites le signe voulu..." , (200, 400), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
         
-        # Checking if hand is actually detected by counting number of contours detected...
+        # Vérifie si la main est effectivement détectée en comptant le nombre de contours détectés...
         if hand is not None:
             
             thresholded, hand_segment = hand
 
-            # Draw contours around hand segment
-            cv2.drawContours(frame_copy, [hand_segment + (ROI_right, ROI_top)], -1, (255, 0, 0),1)
-            
-            cv2.putText(frame_copy, str(num_frames)+"For" + str(element), (70, 45), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
-
-            # Also display the thresholded image
-            cv2.imshow("Thresholded Hand Image", thresholded)
-    
-    else: 
-        
-        # Segmenting the hand region...
-        hand = segment_hand(gray_frame)
-        
-        # Checking if we are able to detect the hand...
-        if hand is not None:
-            
-            # unpack the thresholded img and the max_contour...
-            thresholded, hand_segment = hand
-
-            # Drawing contours around hand segment
             cv2.drawContours(frame_copy, [hand_segment + (ROI_right, ROI_top)], -1, (255, 0, 0),1)
             
             cv2.putText(frame_copy, str(num_frames), (70, 45), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
-            cv2.putText(frame_copy, str(num_imgs_taken) + 'images' +"For" + str(element), (200, 400), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
+
+            cv2.imshow("Thresholded de l'image de la main", thresholded)
+    
+    # On commence à enregistrer les images des signes 
+    else: 
+        
+        hand = segment_hand(gray_frame)
+        
+        # Vérifier si la main est effectivement détectée 
+        if hand is not None:
             
-            # Displaying the thresholded image
-            cv2.imshow("Thresholded Hand Image", thresholded)
+            thresholded, hand_segment = hand
+
+            cv2.drawContours(frame_copy, [hand_segment + (ROI_right, ROI_top)], -1, (255, 0, 0),1)
+            
+            cv2.putText(frame_copy, str(num_frames), (70, 45), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
+            cv2.putText(frame_copy, str(num_imgs_taken) + 'images' , (200, 400), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
+            
+            cv2.imshow("Thresholded de l'image de la main", thresholded)
+            
+            # On enregistre les images dans le dossier train
             if num_imgs_taken <= 1200:
                 cv2.imwrite("C:/SignLanguage/gesture/train/10/" + str(num_imgs_taken) + '.jpg', thresholded)
             else:
                 break
             num_imgs_taken +=1
         else:
-            cv2.putText(frame_copy, 'No hand detected...', (200, 400), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
+            cv2.putText(frame_copy, 'Pas de main...', (200, 400), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
 
-    # Drawing ROI on frame copy
     cv2.rectangle(frame_copy, (ROI_left, ROI_top), (ROI_right, ROI_bottom), (255,128,0), 3)
     
-    cv2.putText(frame_copy, "DataFlair hand sign recognition_ _ _", (10, 20), cv2.FONT_ITALIC, 0.5, (51,255,51), 1)
+    cv2.putText(frame_copy, "Reconnaissance des signes de la main_ _ _", (10, 20), cv2.FONT_ITALIC, 0.5, (51,255,51), 1)
     
-    # increment the number of frames for tracking
+    # Increment du nombre d'images
     num_frames += 1
 
-    # Display the frame with segmented hand
     cv2.imshow("Sign Detection", frame_copy)
 
-    # Closing windows with Esc key
+    # Appuie sur "Exc" pour quitter
     k = cv2.waitKey(1) & 0xFF
 
     if k == 27:
         break
-
-# Releasing camera & destroying all the windows...
 
 cv2.destroyAllWindows()
 cam.release()
