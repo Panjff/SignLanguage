@@ -103,13 +103,10 @@ while True:
     cv2.putText(frame_copy, "DataFlair hand sign recognition_ _ _", (10, 20), cv2.FONT_ITALIC, 0.5, (51,255,51), 1)
     cv2.imshow("Sign Detection", frame_copy)
 
-
-    # Close windows with Esc
     k = cv2.waitKey(1) & 0xFF
 
     if k == 27:
         break
 
-# Release the camera and destroy all the windows
 cam.release()
 cv2.destroyAllWindows()

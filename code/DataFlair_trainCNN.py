@@ -10,19 +10,22 @@ import numpy as np
 import cv2
 from keras.callbacks import ReduceLROnPlateau
 from keras.callbacks import EarlyStopping
+
+# Ignorer les avertissements futurs
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-
+# Chemins vers les données d'entraînement et de test
 train_path = 'C:/SignLanguage/gesture/train'
 test_path = 'C:/SignLanguage/gesture/test'
 
+# Chargement des données d'entraînement et de test avec augmentation des données
 train_batches = ImageDataGenerator(preprocessing_function=tf.keras.applications.vgg16.preprocess_input).flow_from_directory(directory=train_path, target_size=(64,64), class_mode='categorical', batch_size=10,shuffle=True)
 test_batches = ImageDataGenerator(preprocessing_function=tf.keras.applications.vgg16.preprocess_input).flow_from_directory(directory=test_path, target_size=(64,64), class_mode='categorical', batch_size=10, shuffle=True)
 
+# Extraire un lot d'images et de libellés pour l'affichage
 imgs, labels = next(train_batches)
 
-
-#Plotting the images...
+# Définition de la fonction pour afficher les images
 def plotImages(images_arr):
     fig, axes = plt.subplots(1, 10, figsize=(30,20))
     axes = axes.flatten()
@@ -33,11 +36,14 @@ def plotImages(images_arr):
     plt.tight_layout()
     plt.show()
 
-
+# Afficher un échantillon des images d'entraînement
 plotImages(imgs)
+
+# Informations sur les dimensions des images et les étiquettes
 print(imgs.shape)
 print(labels)
 
+# Création du modèle CNN
 model = Sequential()
 
 model.add(Conv2D(filters=32, kernel_size=(3, 3), activation='relu', input_shape=(64,64,3)))
@@ -53,63 +59,58 @@ model.add(Flatten())
 
 model.add(Dense(64,activation ="relu"))
 model.add(Dense(128,activation ="relu"))
-#model.add(Dropout(0.2))
 model.add(Dense(128,activation ="relu"))
-#model.add(Dropout(0.3))
 model.add(Dense(10,activation ="softmax"))
 
-
-
+# Compilation du modèle avec l'optimiseur Adam et la fonction de perte de catégorisation croisée
 model.compile(optimizer=Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
+
+# Définition des callbacks pour ajuster le taux d'apprentissage et arrêter l'entraînement prématurément
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=1, min_lr=0.0001)
 early_stop = EarlyStopping(monitor='val_loss', min_delta=0, patience=2, verbose=0, mode='auto')
 
+# Entraînement du modèle avec les données d'entraînement et les callbacks
+history2 = model.fit(train_batches, epochs=10, callbacks=[reduce_lr, early_stop],  validation_data = test_batches)
 
-
-model.compile(optimizer=SGD(learning_rate=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
-reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=1, min_lr=0.0005)
-early_stop = EarlyStopping(monitor='val_loss', min_delta=0, patience=2, verbose=0, mode='auto')
-
-
-history2 = model.fit(train_batches, epochs=10, callbacks=[reduce_lr, early_stop],  validation_data = test_batches)#, checkpoint])
-imgs, labels = next(train_batches) # For getting next batch of imgs...
-
-imgs, labels = next(test_batches) # For getting next batch of imgs...
+# Évaluation du modèle sur un lot de données de test
+imgs, labels = next(train_batches)
 scores = model.evaluate(imgs, labels, verbose=0)
-print(f'{model.metrics_names[0]} of {scores[0]}; {model.metrics_names[1]} of {scores[1]*100}%')
+print(f'{model.metrics_names[0]} de {scores[0]}; {model.metrics_names[1]} de {scores[1]*100}%')
 
-
-#model.save('best_model_dataflair.h5')
+# Sauvegarde du modèle entraîné
 model.save('best_model_dataflair3.h5')
 
+# Affichage de l'historique d'entraînement
 print(history2.history)
 
-imgs, labels = next(test_batches)
-
+# Chargement du modèle sauvegardé pour la vérification
 model = keras.models.load_model("best_model_dataflair3.h5")
 
+# Évaluation du modèle chargé sur un lot de données de test
 scores = model.evaluate(imgs, labels, verbose=0)
-print(f'{model.metrics_names[0]} of {scores[0]}; {model.metrics_names[1]} of {scores[1]*100}%')
+print(f'{model.metrics_names[0]} de {scores[0]}; {model.metrics_names[1]} de {scores[1]*100}%')
 
+# Résumé du modèle
 model.summary()
 
-scores #[loss, accuracy] on test data...
-model.metrics_names
-
-
+# Dictionnaire pour mapper les indices de classe aux mots
 word_dict = {0:'A',1:'B',2:'Bonjour',3:'C',4:'Cava',5:'D',6:'E',7:'Non',8:'Oui',9:'Pardon'}
 
+# Prédictions sur un lot de données de test
 predictions = model.predict(imgs, verbose=0)
-print("predictions on a small set of test data--")
+print("Prédictions sur un petit ensemble de données de test--")
 print("")
 for ind, i in enumerate(predictions):
     print(word_dict[np.argmax(i)], end='   ')
 
+# Affichage des images de test avec leurs prédictions et leurs étiquettes réelles
 plotImages(imgs)
-print('Actual labels')
+print('Étiquettes réelles')
 for i in labels:
     print(word_dict[np.argmax(i)], end='   ')
 
+# Affichage des dimensions des images de test
 print(imgs.shape)
 
+# Historique d'entraînement
 history2.history
