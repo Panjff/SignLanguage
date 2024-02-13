@@ -1,7 +1,6 @@
 import numpy as np
 import cv2
 import keras
-from DataFlair_trainCNN import word_dict
 
 model = keras.models.load_model("C:/SignLanguage/best_model_dataflair3.h5")
 
@@ -13,6 +12,7 @@ ROI_bottom = 300
 ROI_right = 150
 ROI_left = 350
 
+word_dict = {0:'A',1:'B',2:'C',3:'D',4:'E',5:'Bonjour',6:'Cava',7:'Pardon',8:'Non',9:'Oui'}
 
 
 def cal_accum_avg(frame, accumulated_weight):

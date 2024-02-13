@@ -97,7 +97,7 @@ scores #[loss, accuracy] on test data...
 model.metrics_names
 
 
-word_dict = {0:'B',1:'C',2:'D',3:'E',4:'Bonjour',5:'CaVa',6:'Pardon',7:'Non',8:'Oui',9:'A'}
+word_dict = {0:'A',1:'B',2:'C',3:'D',4:'E',5:'Bonjour',6:'Cava',7:'Pardon',8:'Non',9:'Oui'}
 
 predictions = model.predict(imgs, verbose=0)
 print("predictions on a small set of test data--")

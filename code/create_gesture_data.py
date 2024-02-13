@@ -105,8 +105,8 @@ while True:
             
             # Displaying the thresholded image
             cv2.imshow("Thresholded Hand Image", thresholded)
-            if num_imgs_taken <= 300:
-                cv2.imwrite("C:/SignLanguage/gesture/train/6/" + str(num_imgs_taken) + '.jpg', thresholded)
+            if num_imgs_taken <= 1200:
+                cv2.imwrite("C:/SignLanguage/gesture/train/10/" + str(num_imgs_taken) + '.jpg', thresholded)
             else:
                 break
             num_imgs_taken +=1
