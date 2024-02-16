@@ -80,10 +80,15 @@ Après cela, nous pourrons détecter les signes voulus.
   # 2. Créer le réseau de neuronnes et entrainer
 
   Les chemins des répertoires contenant les données d'entraînement et de test étant spécifiés, les images sont chargées en utilisant "ImageDataGenerator" avec une taille cible de (64,64) et une augmentation des données.
+  
 La création du modèle CNN débute par l'initialisation d'un modèle séquentiel. Ensuite, des couches de convolution, de max pooling et de couches denses sont successivement ajoutées pour construire le réseau de neurones convolutionnel (CNN). La compilation du modèle se fait en utilisant l'optimiseur Adam et la fonction de perte d'entropie croisée catégorielle.
+
 Lors de l'entraînement du modèle, des "callbacks" sont des mécanismes qui peuvent ajuster certains aspects du processus d'apprentissage. Dans ce cas, deux callbacks sont utilisés : l'un pour réduire dynamiquement le taux d'apprentissage pendant l'entraînement, et l'autre pour arrêter prématurément l'entraînement si la performance sur les données de validation ne s'améliore pas. Le modèle est ensuite entraîné sur un ensemble de données spécifié pendant un certain nombre de cycles d'apprentissage, avec des données distinctes utilisées pour évaluer sa progression.
+
 L'évaluation du modèle se fait en le testant sur les données spécifiées pour évaluer sa performance. Après l'entraînement, le modèle est sauvegardé, permettant ainsi son utilisation ultérieure.
+
 Le modèle sauvegardé est chargé pour effectuer des prédictions ou une évaluation ultérieure. Ensuite, le modèle est réévalué sur les données de test pour vérifier la reproductibilité des résultats. 
+
 Les prédictions du modèle sont ensuite affichées pour une petite série de données de test, et les étiquettes réelles correspondantes sont également affichées pour permettre la comparaison avec les prédictions du modèle. 
 
      
